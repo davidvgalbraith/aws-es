@@ -187,6 +187,118 @@ describe('aws-es', function() {
                 expect(is.json(data)).to.be.true;
                 done();
             });
-        })
-    })
+        });
+    });
+
+    describe('count', function() {
+
+        var elasticsearch = null;
+
+        before(function(done) {
+			this.timeout(10000);
+
+            elasticsearch = new AWSES({
+                accessKeyId: config.accessKeyId,
+                secretAccessKey: config.secretAccessKey,
+                service: config.service,
+                region: config.region,
+                host: config.host
+            });
+			// create test index
+			elasticsearch._request('/'+INDEX, function(err, data) {
+                expect(err).to.be.null;
+				// create new document
+				elasticsearch._request(
+					'/'+INDEX+'/'+TYPE,
+					{
+						title: 'hello world'
+					},
+				function(err, data) {
+	                expect(err).to.be.null;
+					done();
+	            });
+            });
+        });
+
+        it('should throw an error for no callback', function() {
+            var fn = function(){ elasticsearch.count(); };
+            expect(fn).to.throw('not_callback');
+        });
+
+        it('should throw an error for invalid callback', function() {
+            var fn = function(){ elasticsearch.count({}, 'callback'); };
+            expect(fn).to.throw('invalid_callback');
+        });
+
+        it('should return an error for no options', function() {
+            elasticsearch.count(function(err, data) {
+                expect(err).to.be.equal('not_options');
+            });
+        });
+
+        it('should return an error for invalid options', function() {
+            elasticsearch.count([], function(err, data) {
+                expect(err).to.be.equal('invalid_options');
+            });
+        });
+
+		it('should return an error for no index', function() {
+            elasticsearch.count({}, function(err, data) {
+                expect(err).to.be.equal('not_index');
+            });
+        });
+
+		it('should return an error for invalid index', function() {
+            elasticsearch.count({
+				index: 123
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_index');
+            });
+        });
+
+		it('should return an error for no type', function() {
+            elasticsearch.count({
+				index: INDEX
+			}, function(err, data) {
+                expect(err).to.be.equal('not_type');
+            });
+        });
+
+		it('should return an error for invalid type', function() {
+            elasticsearch.count({
+				index: INDEX,
+				type: 123
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_type');
+            });
+        });
+
+		it('should return an error for invalid body', function() {
+            elasticsearch.count({
+				index: INDEX,
+				type: TYPE,
+				body: []
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_body');
+            });
+        });
+
+		it('should succeed', function(done) {
+			this.timeout(10000);
+
+            elasticsearch.count({
+				index: INDEX,
+				type: TYPE,
+				body: {
+					query: {
+				    	match_all: {}
+					}
+				}
+			}, function(err, data) {
+                expect(err).to.be.null;
+				expect(is.existy(data.count)).to.be.true;
+				done();
+            });
+        });
+    });
 });
