@@ -1,6 +1,7 @@
 var expect = require('chai').expect;
 var is = require('is_js');
 var AWSES = require(__dirname + '/../../lib/aws-es');
+
 var config = {
 	accessKeyId: 'KEY',
 	secretAccessKey: 'SECRET',
@@ -8,6 +9,8 @@ var config = {
     region: 'REGION',
 	host: 'DOMAIN_ENDPOINT'
 };
+var INDEX = 'testindex';
+var TYPE = 'posts';
 
 describe('aws-es', function() {
 
@@ -168,13 +171,13 @@ describe('aws-es', function() {
             elasticsearch._request('a path', 'invalid body', function(err, data) {
                 expect(err).to.be.equal('invalid_body');
             });
-        })
+        });
 
         it('should return an error for invalid path', function() {
             elasticsearch._request(['invalid path'], function(err, data) {
                 expect(err).to.be.equal('invalid_path');
             });
-        })
+        });
 
         it('should return a valid JSON reply', function(done) {
             this.timeout(10000);
