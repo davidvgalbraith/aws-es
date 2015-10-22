@@ -301,4 +301,146 @@ describe('aws-es', function() {
             });
         });
     });
+
+	describe('update', function() {
+
+        var elasticsearch = null;
+
+        before(function(done) {
+			this.timeout(10000);
+
+            elasticsearch = new AWSES({
+                accessKeyId: config.accessKeyId,
+                secretAccessKey: config.secretAccessKey,
+                service: config.service,
+                region: config.region,
+                host: config.host
+            });
+			// create test index
+			elasticsearch._request('/'+INDEX, function(err, data) {
+                expect(err).to.be.null;
+				// create new document
+				elasticsearch._request(
+					'/'+INDEX+'/'+TYPE+'/'+'1',
+					{
+						title: 'hello world'
+					},
+				function(err, data) {
+	                expect(err).to.be.null;
+					done();
+	            });
+            });
+        });
+
+        it('should throw an error for no callback', function() {
+            var fn = function(){ elasticsearch.update(); };
+            expect(fn).to.throw('not_callback');
+        });
+
+        it('should throw an error for invalid callback', function() {
+            var fn = function(){ elasticsearch.update({}, 'callback'); };
+            expect(fn).to.throw('invalid_callback');
+        });
+
+        it('should return an error for no options', function() {
+            elasticsearch.update(function(err, data) {
+                expect(err).to.be.equal('not_options');
+            });
+        });
+
+        it('should return an error for invalid options', function() {
+            elasticsearch.update([], function(err, data) {
+                expect(err).to.be.equal('invalid_options');
+            });
+        });
+
+		it('should return an error for no index', function() {
+            elasticsearch.update({}, function(err, data) {
+                expect(err).to.be.equal('not_index');
+            });
+        });
+
+		it('should return an error for invalid index', function() {
+            elasticsearch.update({
+				index: 123
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_index');
+            });
+        });
+
+		it('should return an error for no type', function() {
+            elasticsearch.update({
+				index: INDEX
+			}, function(err, data) {
+                expect(err).to.be.equal('not_type');
+            });
+        });
+
+		it('should return an error for invalid type', function() {
+            elasticsearch.update({
+				index: INDEX,
+				type: 123
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_type');
+            });
+        });
+
+		it('should return an error for no id', function() {
+            elasticsearch.update({
+				index: INDEX,
+				type: TYPE
+			}, function(err, data) {
+                expect(err).to.be.equal('not_id');
+            });
+        });
+
+		it('should return an error for invalid id', function() {
+            elasticsearch.update({
+				index: INDEX,
+				type: TYPE,
+				id: 1
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_id');
+            });
+        });
+
+		it('should return an error for no body', function() {
+            elasticsearch.update({
+				index: INDEX,
+				type: TYPE,
+				id: '1'
+			}, function(err, data) {
+                expect(err).to.be.equal('not_body');
+            });
+        });
+
+		it('should return an error for invalid body', function() {
+            elasticsearch.update({
+				index: INDEX,
+				type: TYPE,
+				id: '1',
+				body: []
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_body');
+            });
+        });
+
+		it('should succeed', function(done) {
+			this.timeout(10000);
+
+            elasticsearch.update({
+				index: INDEX,
+				type: TYPE,
+				id: '1',
+				body: {
+					title: 'new title'
+				}
+			}, function(err, data) {
+				expect(err).to.be.null;
+				expect(data.created).to.be.false;
+				expect(data._version).to.be.above(1);
+				done();
+            });
+        });
+    });
 });
