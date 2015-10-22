@@ -1,0 +1,27 @@
+{
+  "name": "aws-es",
+  "version": "1.0.0",
+  "description": "An interface to communicate with Amazon Elasticsearch service. It uses AWS Signature Version 4.",
+  "main": "./lib/aws-es.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/crowdanalyzer/aws-es.git"
+  },
+  "keywords": [
+    "aws",
+    "elasticsearch"
+  ],
+  "author": "Mahmoud Adly <mahmoud.adly@crowdanalyzer.com>",
+  "license": "ISC",
+  "dependencies": {
+    "aws4": "^1.1.0",
+    "is_js": "^0.7.4"
+  },
+  "devDependencies": {
+    "chai": "^3.4.0",
+    "mocha": "^2.3.3"
+  }
+}
