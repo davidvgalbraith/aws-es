@@ -180,7 +180,7 @@ describe('aws-es', function() {
         });
 
         it('should return a valid JSON reply', function(done) {
-            this.timeout(10000);
+            this.timeout(20000);
 
             elasticsearch._request('/', function(err, data) {
                 expect(err).to.be.null;
@@ -195,7 +195,7 @@ describe('aws-es', function() {
         var elasticsearch = null;
 
         before(function(done) {
-			this.timeout(10000);
+			this.timeout(20000);
 
             elasticsearch = new AWSES({
                 accessKeyId: config.accessKeyId,
@@ -284,7 +284,7 @@ describe('aws-es', function() {
         });
 
 		it('should succeed', function(done) {
-			this.timeout(10000);
+			this.timeout(20000);
 
             elasticsearch.count({
 				index: INDEX,
@@ -307,7 +307,7 @@ describe('aws-es', function() {
         var elasticsearch = null;
 
         before(function(done) {
-			this.timeout(10000);
+			this.timeout(20000);
 
             elasticsearch = new AWSES({
                 accessKeyId: config.accessKeyId,
@@ -426,7 +426,7 @@ describe('aws-es', function() {
         });
 
 		it('should succeed', function(done) {
-			this.timeout(10000);
+			this.timeout(20000);
 
             elasticsearch.update({
 				index: INDEX,
@@ -449,7 +449,7 @@ describe('aws-es', function() {
         var elasticsearch = null;
 
         before(function(done) {
-			this.timeout(10000);
+			this.timeout(20000);
 
             elasticsearch = new AWSES({
                 accessKeyId: config.accessKeyId,
@@ -547,7 +547,7 @@ describe('aws-es', function() {
         });
 
 		it('should succeed', function(done) {
-			this.timeout(10000);
+			this.timeout(20000);
 
 			var ops = [];
 			ops.push({ update: { _id : '1' }});
@@ -571,7 +571,7 @@ describe('aws-es', function() {
         var elasticsearch = null;
 
         before(function(done) {
-			this.timeout(10000);
+			this.timeout(20000);
 
             elasticsearch = new AWSES({
                 accessKeyId: config.accessKeyId,
@@ -669,7 +669,7 @@ describe('aws-es', function() {
         });
 
 		it('should succeed', function(done) {
-			this.timeout(10000);
+			this.timeout(20000);
 
             elasticsearch.search({
 				index: INDEX,
@@ -687,7 +687,7 @@ describe('aws-es', function() {
         });
 
 		it('should succeed with scroll', function(done) {
-			this.timeout(10000);
+			this.timeout(20000);
 
             elasticsearch.search({
 				index: INDEX,
@@ -707,7 +707,7 @@ describe('aws-es', function() {
         });
 
 		it('should succeed with scroll-scan', function(done) {
-			this.timeout(10000);
+			this.timeout(20000);
 
             elasticsearch.search({
 				index: INDEX,
@@ -733,7 +733,7 @@ describe('aws-es', function() {
 		var elasticsearch = null;
 
 		before(function(done) {
-			this.timeout(10000);
+			this.timeout(20000);
 
 			elasticsearch = new AWSES({
 				accessKeyId: config.accessKeyId,
@@ -812,7 +812,7 @@ describe('aws-es', function() {
 		});
 
 		it('should succeed with scroll', function(done) {
-			this.timeout(10000);
+			this.timeout(20000);
 
 			elasticsearch.search({
 				index: INDEX,
@@ -837,4 +837,238 @@ describe('aws-es', function() {
 			});
 		});
 	});
+
+	describe('get', function() {
+
+        var elasticsearch = null;
+
+        before(function(done) {
+			this.timeout(20000);
+
+            elasticsearch = new AWSES({
+                accessKeyId: config.accessKeyId,
+                secretAccessKey: config.secretAccessKey,
+                service: config.service,
+                region: config.region,
+                host: config.host
+            });
+			// create test index
+			elasticsearch._request('/'+INDEX, function(err, data) {
+                expect(err).to.be.null;
+				// create new document
+				elasticsearch._request(
+					'/'+INDEX+'/'+TYPE+'/'+'1',
+					{
+						title: 'hello world'
+					},
+				function(err, data) {
+	                expect(err).to.be.null;
+					done();
+	            });
+            });
+        });
+
+        it('should throw an error for no callback', function() {
+            var fn = function(){ elasticsearch.get(); };
+            expect(fn).to.throw('not_callback');
+        });
+
+        it('should throw an error for invalid callback', function() {
+            var fn = function(){ elasticsearch.get({}, 'callback'); };
+            expect(fn).to.throw('invalid_callback');
+        });
+
+        it('should return an error for no options', function() {
+            elasticsearch.get(function(err, data) {
+                expect(err).to.be.equal('not_options');
+            });
+        });
+
+        it('should return an error for invalid options', function() {
+            elasticsearch.get([], function(err, data) {
+                expect(err).to.be.equal('invalid_options');
+            });
+        });
+
+		it('should return an error for no index', function() {
+            elasticsearch.get({}, function(err, data) {
+                expect(err).to.be.equal('not_index');
+            });
+        });
+
+		it('should return an error for invalid index', function() {
+            elasticsearch.get({
+				index: 123
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_index');
+            });
+        });
+
+		it('should return an error for no type', function() {
+            elasticsearch.get({
+				index: INDEX
+			}, function(err, data) {
+                expect(err).to.be.equal('not_type');
+            });
+        });
+
+		it('should return an error for invalid type', function() {
+            elasticsearch.get({
+				index: INDEX,
+				type: 123
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_type');
+            });
+        });
+
+		it('should return an error for no id', function() {
+            elasticsearch.get({
+				index: INDEX,
+				type: TYPE
+			}, function(err, data) {
+                expect(err).to.be.equal('not_id');
+            });
+        });
+
+		it('should return an error for invalid id', function() {
+            elasticsearch.get({
+				index: INDEX,
+				type: TYPE,
+				id: 1
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_id');
+            });
+        });
+
+		it('should succeed', function(done) {
+			this.timeout(20000);
+
+            elasticsearch.get({
+				index: INDEX,
+				type: TYPE,
+				id: '1'
+			}, function(err, data) {
+				expect(err).to.be.null;
+				expect(data._id).to.be.equal('1');
+				done();
+            });
+        });
+    });
+
+	describe('mget', function() {
+
+        var elasticsearch = null;
+
+        before(function(done) {
+			this.timeout(20000);
+
+            elasticsearch = new AWSES({
+                accessKeyId: config.accessKeyId,
+                secretAccessKey: config.secretAccessKey,
+                service: config.service,
+                region: config.region,
+                host: config.host
+            });
+			// create test index
+			elasticsearch._request('/'+INDEX, function(err, data) {
+                expect(err).to.be.null;
+				// create new document
+				elasticsearch._request(
+					'/'+INDEX+'/'+TYPE+'/'+'1',
+					{
+						title: 'hello world'
+					},
+				function(err, data) {
+	                expect(err).to.be.null;
+					done();
+	            });
+            });
+        });
+
+        it('should throw an error for no callback', function() {
+            var fn = function(){ elasticsearch.mget(); };
+            expect(fn).to.throw('not_callback');
+        });
+
+        it('should throw an error for invalid callback', function() {
+            var fn = function(){ elasticsearch.mget({}, 'callback'); };
+            expect(fn).to.throw('invalid_callback');
+        });
+
+        it('should return an error for no options', function() {
+            elasticsearch.mget(function(err, data) {
+                expect(err).to.be.equal('not_options');
+            });
+        });
+
+        it('should return an error for invalid options', function() {
+            elasticsearch.mget([], function(err, data) {
+                expect(err).to.be.equal('invalid_options');
+            });
+        });
+
+		it('should return an error for no index', function() {
+            elasticsearch.mget({}, function(err, data) {
+                expect(err).to.be.equal('not_index');
+            });
+        });
+
+		it('should return an error for invalid index', function() {
+            elasticsearch.mget({
+				index: 123
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_index');
+            });
+        });
+
+		it('should return an error for no type', function() {
+            elasticsearch.mget({
+				index: INDEX
+			}, function(err, data) {
+                expect(err).to.be.equal('not_type');
+            });
+        });
+
+		it('should return an error for invalid type', function() {
+            elasticsearch.mget({
+				index: INDEX,
+				type: 123
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_type');
+            });
+        });
+
+		it('should return an error for no ids', function() {
+            elasticsearch.mget({
+				index: INDEX,
+				type: TYPE
+			}, function(err, data) {
+                expect(err).to.be.equal('not_ids');
+            });
+        });
+
+		it('should return an error for invalid ids', function() {
+            elasticsearch.mget({
+				index: INDEX,
+				type: TYPE,
+				ids: '1'
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_ids');
+            });
+        });
+
+		it('should succeed', function(done) {
+			this.timeout(20000);
+
+            elasticsearch.mget({
+				index: INDEX,
+				type: TYPE,
+				ids: ['1']
+			}, function(err, data) {
+				expect(err).to.be.null;
+				expect(data.docs[0]._id).to.be.equal('1');
+				done();
+            });
+        });
+    });
 });
