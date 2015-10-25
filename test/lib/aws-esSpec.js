@@ -1038,22 +1038,22 @@ describe('aws-es', function() {
             });
         });
 
-		it('should return an error for no ids', function() {
+		it('should return an error for no body', function() {
             elasticsearch.mget({
 				index: INDEX,
 				type: TYPE
 			}, function(err, data) {
-                expect(err).to.be.equal('not_ids');
+                expect(err).to.be.equal('not_body');
             });
         });
 
-		it('should return an error for invalid ids', function() {
+		it('should return an error for invalid body', function() {
             elasticsearch.mget({
 				index: INDEX,
 				type: TYPE,
-				ids: '1'
+				body: ['1']
 			}, function(err, data) {
-                expect(err).to.be.equal('invalid_ids');
+                expect(err).to.be.equal('invalid_body');
             });
         });
 
@@ -1063,7 +1063,9 @@ describe('aws-es', function() {
             elasticsearch.mget({
 				index: INDEX,
 				type: TYPE,
-				ids: ['1']
+				body: {
+					ids: ['1']
+				}
 			}, function(err, data) {
 				expect(err).to.be.null;
 				expect(data.docs[0]._id).to.be.equal('1');
