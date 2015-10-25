@@ -565,4 +565,166 @@ describe('aws-es', function() {
             });
         });
     });
+
+	describe('search', function() {
+
+        var elasticsearch = null;
+
+        before(function(done) {
+			this.timeout(10000);
+
+            elasticsearch = new AWSES({
+                accessKeyId: config.accessKeyId,
+                secretAccessKey: config.secretAccessKey,
+                service: config.service,
+                region: config.region,
+                host: config.host
+            });
+			// create test index
+			elasticsearch._request('/'+INDEX, function(err, data) {
+                expect(err).to.be.null;
+				// create new document
+				elasticsearch._request(
+					'/'+INDEX+'/'+TYPE+'/'+'1',
+					{
+						title: 'hello world'
+					},
+				function(err, data) {
+	                expect(err).to.be.null;
+					done();
+	            });
+            });
+        });
+
+        it('should throw an error for no callback', function() {
+            var fn = function(){ elasticsearch.search(); };
+            expect(fn).to.throw('not_callback');
+        });
+
+        it('should throw an error for invalid callback', function() {
+            var fn = function(){ elasticsearch.search({}, 'callback'); };
+            expect(fn).to.throw('invalid_callback');
+        });
+
+        it('should return an error for no options', function() {
+            elasticsearch.search(function(err, data) {
+                expect(err).to.be.equal('not_options');
+            });
+        });
+
+        it('should return an error for invalid options', function() {
+            elasticsearch.search([], function(err, data) {
+                expect(err).to.be.equal('invalid_options');
+            });
+        });
+
+		it('should return an error for no index', function() {
+            elasticsearch.search({}, function(err, data) {
+                expect(err).to.be.equal('not_index');
+            });
+        });
+
+		it('should return an error for invalid index', function() {
+            elasticsearch.search({
+				index: 123
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_index');
+            });
+        });
+
+		it('should return an error for no type', function() {
+            elasticsearch.search({
+				index: INDEX
+			}, function(err, data) {
+                expect(err).to.be.equal('not_type');
+            });
+        });
+
+		it('should return an error for invalid type', function() {
+            elasticsearch.search({
+				index: INDEX,
+				type: 123
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_type');
+            });
+        });
+
+		it('should return an error for no body', function() {
+            elasticsearch.search({
+				index: INDEX,
+				type: TYPE
+			}, function(err, data) {
+                expect(err).to.be.equal('not_body');
+            });
+        });
+
+		it('should return an error for invalid body', function() {
+            elasticsearch.search({
+				index: INDEX,
+				type: TYPE,
+				body: []
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_body');
+            });
+        });
+
+		it('should succeed', function(done) {
+			this.timeout(10000);
+
+            elasticsearch.search({
+				index: INDEX,
+				type: TYPE,
+				body: {
+					query: {
+				    	match_all: {}
+					}
+				}
+			}, function(err, data) {
+				expect(err).to.be.null;
+				expect(data.hits.total).to.be.above(0);
+				done();
+            });
+        });
+
+		it('should succeed with scroll', function(done) {
+			this.timeout(10000);
+
+            elasticsearch.search({
+				index: INDEX,
+				type: TYPE,
+				body: {
+					query: {
+				    	match_all: {}
+					}
+				},
+				scroll: '1ms'
+			}, function(err, data) {
+				expect(err).to.be.null;
+				expect(data.hits.total).to.be.above(0);
+				expect(data._scroll_id).to.be.a('string');
+				done();
+            });
+        });
+
+		it('should succeed with scroll-scan', function(done) {
+			this.timeout(10000);
+
+            elasticsearch.search({
+				index: INDEX,
+				type: TYPE,
+				body: {
+					query: {
+				    	match_all: {}
+					}
+				},
+				scroll: '1ms',
+				search_type: 'scan'
+			}, function(err, data) {
+				expect(err).to.be.null;
+				expect(data.hits.total).to.be.above(0);
+				expect(data._scroll_id).to.be.a('string');
+				done();
+            });
+        });
+    });
 });
