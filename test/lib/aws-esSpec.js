@@ -18,7 +18,7 @@ describe('aws-es', function() {
 
 	before(function(done) {
 		this.timeout(20000);
-		
+
 		elasticsearch = new AWSES({
 			accessKeyId: config.accessKeyId,
 			secretAccessKey: config.secretAccessKey,
@@ -191,7 +191,7 @@ describe('aws-es', function() {
         });
 
         it('should throw an error for invalid callback', function() {
-            var fn = function(){ elasticsearch._request('', '', 'callback'); };
+            var fn = function(){ elasticsearch._request('', '', '', 'callback'); };
             expect(fn).to.throw('invalid_callback');
         });
 
@@ -506,12 +506,13 @@ describe('aws-es', function() {
 				type: TYPE,
 				id: '1',
 				body: {
-					title: 'new title'
+					doc: {
+						title: 'new title'
+					}
 				}
 			}, function(err, data) {
 				expect(err).to.be.null;
-				expect(data.created).to.be.false;
-				expect(data._version).to.be.above(1);
+				expect(data._version).to.be.above(0);
 				done();
             });
         });
@@ -1002,6 +1003,78 @@ describe('aws-es', function() {
 			}, function(err, data) {
 				expect(err).to.be.null;
 				expect(data.docs[0]._id).to.be.equal('1');
+				done();
+            });
+        });
+    });
+
+	describe('delete', function() {
+
+        it('should throw an error for no callback', function() {
+            var fn = function(){ elasticsearch.delete(); };
+            expect(fn).to.throw('not_callback');
+        });
+
+        it('should throw an error for invalid callback', function() {
+            var fn = function(){ elasticsearch.delete({}, 'callback'); };
+            expect(fn).to.throw('invalid_callback');
+        });
+
+        it('should return an error for no options', function() {
+            elasticsearch.delete(function(err, data) {
+                expect(err).to.be.equal('not_options');
+            });
+        });
+
+        it('should return an error for invalid options', function() {
+            elasticsearch.delete([], function(err, data) {
+                expect(err).to.be.equal('invalid_options');
+            });
+        });
+
+		it('should return an error for no index', function() {
+            elasticsearch.delete({}, function(err, data) {
+                expect(err).to.be.equal('not_index');
+            });
+        });
+
+		it('should return an error for invalid index', function() {
+            elasticsearch.delete({
+				index: 123
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_index');
+            });
+        });
+
+		it('should return an error for invalid type', function() {
+            elasticsearch.delete({
+				index: INDEX,
+				type: 123
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_type');
+            });
+        });
+
+		it('should return an error for invalid id', function() {
+            elasticsearch.delete({
+				index: INDEX,
+				type: TYPE,
+				id: 1
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_id');
+            });
+        });
+
+		it('should succeed', function(done) {
+			this.timeout(20000);
+
+            elasticsearch.delete({
+				index: INDEX,
+				type: TYPE,
+				id: '1'
+			}, function(err, data) {
+				expect(err).to.be.null;
+				expect(data.found).to.be.true;
 				done();
             });
         });
