@@ -443,4 +443,126 @@ describe('aws-es', function() {
             });
         });
     });
+
+	describe('bulk', function() {
+
+        var elasticsearch = null;
+
+        before(function(done) {
+			this.timeout(10000);
+
+            elasticsearch = new AWSES({
+                accessKeyId: config.accessKeyId,
+                secretAccessKey: config.secretAccessKey,
+                service: config.service,
+                region: config.region,
+                host: config.host
+            });
+			// create test index
+			elasticsearch._request('/'+INDEX, function(err, data) {
+                expect(err).to.be.null;
+				// create new document
+				elasticsearch._request(
+					'/'+INDEX+'/'+TYPE+'/'+'1',
+					{
+						title: 'hello world'
+					},
+				function(err, data) {
+	                expect(err).to.be.null;
+					done();
+	            });
+            });
+        });
+
+        it('should throw an error for no callback', function() {
+            var fn = function(){ elasticsearch.bulk(); };
+            expect(fn).to.throw('not_callback');
+        });
+
+        it('should throw an error for invalid callback', function() {
+            var fn = function(){ elasticsearch.bulk({}, 'callback'); };
+            expect(fn).to.throw('invalid_callback');
+        });
+
+        it('should return an error for no options', function() {
+            elasticsearch.bulk(function(err, data) {
+                expect(err).to.be.equal('not_options');
+            });
+        });
+
+        it('should return an error for invalid options', function() {
+            elasticsearch.bulk([], function(err, data) {
+                expect(err).to.be.equal('invalid_options');
+            });
+        });
+
+		it('should return an error for no index', function() {
+            elasticsearch.bulk({}, function(err, data) {
+                expect(err).to.be.equal('not_index');
+            });
+        });
+
+		it('should return an error for invalid index', function() {
+            elasticsearch.bulk({
+				index: 123
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_index');
+            });
+        });
+
+		it('should return an error for no type', function() {
+            elasticsearch.bulk({
+				index: INDEX
+			}, function(err, data) {
+                expect(err).to.be.equal('not_type');
+            });
+        });
+
+		it('should return an error for invalid type', function() {
+            elasticsearch.bulk({
+				index: INDEX,
+				type: 123
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_type');
+            });
+        });
+
+		it('should return an error for no body', function() {
+            elasticsearch.bulk({
+				index: INDEX,
+				type: TYPE
+			}, function(err, data) {
+                expect(err).to.be.equal('not_body');
+            });
+        });
+
+		it('should return an error for invalid body', function() {
+            elasticsearch.bulk({
+				index: INDEX,
+				type: TYPE,
+				body: []
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_body');
+            });
+        });
+
+		it('should succeed', function(done) {
+			this.timeout(10000);
+
+			var ops = [];
+			ops.push({ update: { _id : '1' }});
+			ops.push({ doc: { title: 'brand new' }});
+
+            elasticsearch.bulk({
+				index: INDEX,
+				type: TYPE,
+				body: ops
+			}, function(err, data) {
+				expect(err).to.be.null;
+				expect(data.errors).to.be.false;
+				expect(data.items[0].update.status).to.be.equal(200);
+				done();
+            });
+        });
+    });
 });
