@@ -14,6 +14,34 @@ var TYPE = 'posts';
 
 describe('aws-es', function() {
 
+	var elasticsearch = null;
+
+	before(function(done) {
+		this.timeout(20000);
+		
+		elasticsearch = new AWSES({
+			accessKeyId: config.accessKeyId,
+			secretAccessKey: config.secretAccessKey,
+			service: config.service,
+			region: config.region,
+			host: config.host
+		});
+		// create test index
+		elasticsearch._request('/'+INDEX, function(err, data) {
+			expect(err).to.be.null;
+			// create new document
+			elasticsearch._request(
+				'/'+INDEX+'/'+TYPE,
+				{
+					title: 'hello world'
+				},
+			function(err, data) {
+				expect(err).to.be.null;
+				done();
+			});
+		});
+	});
+
     describe('init', function() {
 
         it('should throw an error for no config', function() {
@@ -192,34 +220,6 @@ describe('aws-es', function() {
 
     describe('count', function() {
 
-        var elasticsearch = null;
-
-        before(function(done) {
-			this.timeout(20000);
-
-            elasticsearch = new AWSES({
-                accessKeyId: config.accessKeyId,
-                secretAccessKey: config.secretAccessKey,
-                service: config.service,
-                region: config.region,
-                host: config.host
-            });
-			// create test index
-			elasticsearch._request('/'+INDEX, function(err, data) {
-                expect(err).to.be.null;
-				// create new document
-				elasticsearch._request(
-					'/'+INDEX+'/'+TYPE,
-					{
-						title: 'hello world'
-					},
-				function(err, data) {
-	                expect(err).to.be.null;
-					done();
-	            });
-            });
-        });
-
         it('should throw an error for no callback', function() {
             var fn = function(){ elasticsearch.count(); };
             expect(fn).to.throw('not_callback');
@@ -302,35 +302,108 @@ describe('aws-es', function() {
         });
     });
 
-	describe('update', function() {
+	describe('index', function() {
 
-        var elasticsearch = null;
+        it('should throw an error for no callback', function() {
+            var fn = function(){ elasticsearch.index(); };
+            expect(fn).to.throw('not_callback');
+        });
 
-        before(function(done) {
-			this.timeout(20000);
+        it('should throw an error for invalid callback', function() {
+            var fn = function(){ elasticsearch.index({}, 'callback'); };
+            expect(fn).to.throw('invalid_callback');
+        });
 
-            elasticsearch = new AWSES({
-                accessKeyId: config.accessKeyId,
-                secretAccessKey: config.secretAccessKey,
-                service: config.service,
-                region: config.region,
-                host: config.host
-            });
-			// create test index
-			elasticsearch._request('/'+INDEX, function(err, data) {
-                expect(err).to.be.null;
-				// create new document
-				elasticsearch._request(
-					'/'+INDEX+'/'+TYPE+'/'+'1',
-					{
-						title: 'hello world'
-					},
-				function(err, data) {
-	                expect(err).to.be.null;
-					done();
-	            });
+        it('should return an error for no options', function() {
+            elasticsearch.index(function(err, data) {
+                expect(err).to.be.equal('not_options');
             });
         });
+
+        it('should return an error for invalid options', function() {
+            elasticsearch.index([], function(err, data) {
+                expect(err).to.be.equal('invalid_options');
+            });
+        });
+
+		it('should return an error for no index', function() {
+            elasticsearch.index({}, function(err, data) {
+                expect(err).to.be.equal('not_index');
+            });
+        });
+
+		it('should return an error for invalid index', function() {
+            elasticsearch.index({
+				index: 123
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_index');
+            });
+        });
+
+		it('should return an error for no type', function() {
+            elasticsearch.index({
+				index: INDEX
+			}, function(err, data) {
+                expect(err).to.be.equal('not_type');
+            });
+        });
+
+		it('should return an error for invalid type', function() {
+            elasticsearch.index({
+				index: INDEX,
+				type: 123
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_type');
+            });
+        });
+
+		it('should return an error for invalid id', function() {
+            elasticsearch.index({
+				index: INDEX,
+				type: TYPE,
+				id: 1
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_id');
+            });
+        });
+
+		it('should return an error for no body', function() {
+            elasticsearch.index({
+				index: INDEX,
+				type: TYPE
+			}, function(err, data) {
+                expect(err).to.be.equal('not_body');
+            });
+        });
+
+		it('should return an error for invalid body', function() {
+            elasticsearch.index({
+				index: INDEX,
+				type: TYPE,
+				body: []
+			}, function(err, data) {
+                expect(err).to.be.equal('invalid_body');
+            });
+        });
+
+		it('should succeed', function(done) {
+			this.timeout(20000);
+
+            elasticsearch.index({
+				index: INDEX,
+				type: TYPE,
+				body: {
+					title: 'extra title'
+				}
+			}, function(err, data) {
+				expect(err).to.be.null;
+				expect(data.created).to.be.true;
+				done();
+            });
+        });
+    });
+
+	describe('update', function() {
 
         it('should throw an error for no callback', function() {
             var fn = function(){ elasticsearch.update(); };
@@ -446,34 +519,6 @@ describe('aws-es', function() {
 
 	describe('bulk', function() {
 
-        var elasticsearch = null;
-
-        before(function(done) {
-			this.timeout(20000);
-
-            elasticsearch = new AWSES({
-                accessKeyId: config.accessKeyId,
-                secretAccessKey: config.secretAccessKey,
-                service: config.service,
-                region: config.region,
-                host: config.host
-            });
-			// create test index
-			elasticsearch._request('/'+INDEX, function(err, data) {
-                expect(err).to.be.null;
-				// create new document
-				elasticsearch._request(
-					'/'+INDEX+'/'+TYPE+'/'+'1',
-					{
-						title: 'hello world'
-					},
-				function(err, data) {
-	                expect(err).to.be.null;
-					done();
-	            });
-            });
-        });
-
         it('should throw an error for no callback', function() {
             var fn = function(){ elasticsearch.bulk(); };
             expect(fn).to.throw('not_callback');
@@ -567,34 +612,6 @@ describe('aws-es', function() {
     });
 
 	describe('search', function() {
-
-        var elasticsearch = null;
-
-        before(function(done) {
-			this.timeout(20000);
-
-            elasticsearch = new AWSES({
-                accessKeyId: config.accessKeyId,
-                secretAccessKey: config.secretAccessKey,
-                service: config.service,
-                region: config.region,
-                host: config.host
-            });
-			// create test index
-			elasticsearch._request('/'+INDEX, function(err, data) {
-                expect(err).to.be.null;
-				// create new document
-				elasticsearch._request(
-					'/'+INDEX+'/'+TYPE+'/'+'1',
-					{
-						title: 'hello world'
-					},
-				function(err, data) {
-	                expect(err).to.be.null;
-					done();
-	            });
-            });
-        });
 
         it('should throw an error for no callback', function() {
             var fn = function(){ elasticsearch.search(); };
@@ -730,34 +747,6 @@ describe('aws-es', function() {
 
 	describe('scroll', function() {
 
-		var elasticsearch = null;
-
-		before(function(done) {
-			this.timeout(20000);
-
-			elasticsearch = new AWSES({
-				accessKeyId: config.accessKeyId,
-				secretAccessKey: config.secretAccessKey,
-				service: config.service,
-				region: config.region,
-				host: config.host
-			});
-			// create test index
-			elasticsearch._request('/'+INDEX, function(err, data) {
-				expect(err).to.be.null;
-				// create new document
-				elasticsearch._request(
-					'/'+INDEX+'/'+TYPE+'/'+'1',
-					{
-						title: 'hello world'
-					},
-				function(err, data) {
-					expect(err).to.be.null;
-					done();
-				});
-			});
-		});
-
 		it('should throw an error for no callback', function() {
 			var fn = function(){ elasticsearch.scroll(); };
 			expect(fn).to.throw('not_callback');
@@ -839,34 +828,6 @@ describe('aws-es', function() {
 	});
 
 	describe('get', function() {
-
-        var elasticsearch = null;
-
-        before(function(done) {
-			this.timeout(20000);
-
-            elasticsearch = new AWSES({
-                accessKeyId: config.accessKeyId,
-                secretAccessKey: config.secretAccessKey,
-                service: config.service,
-                region: config.region,
-                host: config.host
-            });
-			// create test index
-			elasticsearch._request('/'+INDEX, function(err, data) {
-                expect(err).to.be.null;
-				// create new document
-				elasticsearch._request(
-					'/'+INDEX+'/'+TYPE+'/'+'1',
-					{
-						title: 'hello world'
-					},
-				function(err, data) {
-	                expect(err).to.be.null;
-					done();
-	            });
-            });
-        });
 
         it('should throw an error for no callback', function() {
             var fn = function(){ elasticsearch.get(); };
@@ -956,34 +917,6 @@ describe('aws-es', function() {
     });
 
 	describe('mget', function() {
-
-        var elasticsearch = null;
-
-        before(function(done) {
-			this.timeout(20000);
-
-            elasticsearch = new AWSES({
-                accessKeyId: config.accessKeyId,
-                secretAccessKey: config.secretAccessKey,
-                service: config.service,
-                region: config.region,
-                host: config.host
-            });
-			// create test index
-			elasticsearch._request('/'+INDEX, function(err, data) {
-                expect(err).to.be.null;
-				// create new document
-				elasticsearch._request(
-					'/'+INDEX+'/'+TYPE+'/'+'1',
-					{
-						title: 'hello world'
-					},
-				function(err, data) {
-	                expect(err).to.be.null;
-					done();
-	            });
-            });
-        });
 
         it('should throw an error for no callback', function() {
             var fn = function(){ elasticsearch.mget(); };
