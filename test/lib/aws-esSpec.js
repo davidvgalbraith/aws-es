@@ -26,19 +26,15 @@ describe('aws-es', function() {
 			region: config.region,
 			host: config.host
 		});
-		// create test index
-		elasticsearch._request('/'+INDEX, function(err, data) {
+		// create test index and document
+		elasticsearch._request(
+			'/'+INDEX+'/'+TYPE+'/1',
+			{
+				title: 'hello world'
+			},
+		function(err, data) {
 			expect(err).to.be.null;
-			// create new document
-			elasticsearch._request(
-				'/'+INDEX+'/'+TYPE,
-				{
-					title: 'hello world'
-				},
-			function(err, data) {
-				expect(err).to.be.null;
-				done();
-			});
+			done();
 		});
 	});
 
