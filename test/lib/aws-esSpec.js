@@ -898,6 +898,31 @@ describe('aws-es', function() {
 				done();
             });
         });
+
+		it('should succeed with aggregations', function(done) {
+			this.timeout(20000);
+
+            elasticsearch.search({
+				index: INDEX,
+				type: TYPE,
+				body: {
+					query: {
+				    	match_all: {}
+					},
+					aggs: {
+    					shares_count: {
+    						min: {
+        						field: "shares"
+    						}
+    					}
+  					}
+				}
+			}, function(err, data) {
+				expect(err).to.be.null;
+				expect(data.aggregations.shares_count.value).to.be.equal(2);
+				done();
+            });
+        });
     });
 
 	describe('scroll', function() {
