@@ -35,7 +35,7 @@ describe('aws-es', function() {
 				type: TYPE,
 				id: '1',
 				body: {
-					title: 'first title',
+					title: 'first post title',
 					shares: 2
 				}
 			}, function(err, data) {
@@ -398,7 +398,7 @@ describe('aws-es', function() {
 				type: TYPE,
 				id: '2',
 				body: {
-					title: 'second title',
+					title: 'second post title',
 					shares: 10
 				}
 			}, function(err, data) {
@@ -603,7 +603,7 @@ describe('aws-es', function() {
 
 			var ops = [];
 			ops.push({ update: { _id : '1' }});
-			ops.push({ doc: { title: 'brand new' }});
+			ops.push({ doc: { title: 'brand new title' }});
 
             elasticsearch.bulk({
 				index: INDEX,
@@ -923,6 +923,27 @@ describe('aws-es', function() {
 				done();
             });
         });
+
+		it('should succeed with defaultOperator AND', function(done) {
+			this.timeout(20000);
+
+			elasticsearch.search({
+				index: INDEX,
+				type: TYPE,
+				body: {
+					query: {
+						query_string: {
+							query: 'second title'
+						}
+					}
+				},
+				defaultOperator: 'AND'
+			}, function(err, data) {
+				expect(err).to.be.null;
+				expect(data.hits.hits.length).to.be.equal(1);
+				done();
+			});
+		});
     });
 
 	describe('scroll', function() {
