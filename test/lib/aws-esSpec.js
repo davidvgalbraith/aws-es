@@ -26,15 +26,23 @@ describe('aws-es', function() {
 			region: config.region,
 			host: config.host
 		});
-		// create test index and document
-		elasticsearch._request(
-			'/'+INDEX+'/'+TYPE+'/1',
-			{
-				title: 'hello world'
-			},
-		function(err, data) {
-			expect(err).to.be.null;
-			done();
+		elasticsearch.delete({
+			index: INDEX
+		}, function(err, data) {
+			expect(err).to.be.not.ok;
+			elasticsearch.index({
+				index: INDEX,
+				type: TYPE,
+				id: '1',
+				body: {
+					title: 'first title',
+					shares: 2
+				}
+			}, function(err, data) {
+				expect(err).to.be.null;
+				expect(data._version).to.be.equal(1);
+				done();
+			});
 		});
 	});
 
@@ -292,7 +300,7 @@ describe('aws-es', function() {
 				}
 			}, function(err, data) {
                 expect(err).to.be.null;
-				expect(is.existy(data.count)).to.be.true;
+				expect(data.count).to.be.equal(1);
 				done();
             });
         });
@@ -388,8 +396,10 @@ describe('aws-es', function() {
             elasticsearch.index({
 				index: INDEX,
 				type: TYPE,
+				id: '2',
 				body: {
-					title: 'extra title'
+					title: 'second title',
+					shares: 10
 				}
 			}, function(err, data) {
 				expect(err).to.be.null;
@@ -508,7 +518,7 @@ describe('aws-es', function() {
 				}
 			}, function(err, data) {
 				expect(err).to.be.null;
-				expect(data._version).to.be.above(0);
+				expect(data._version).to.be.equal(2);
 				done();
             });
         });
@@ -695,7 +705,139 @@ describe('aws-es', function() {
 				}
 			}, function(err, data) {
 				expect(err).to.be.null;
-				expect(data.hits.total).to.be.above(0);
+				expect(data.hits.total).to.be.equal(2);
+				done();
+            });
+        });
+
+		it('should return an error for invalid size', function(done) {
+			this.timeout(20000);
+
+            elasticsearch.search({
+				index: INDEX,
+				type: TYPE,
+				body: {
+					query: {
+				    	match_all: {}
+					}
+				},
+				size: 1.5
+			}, function(err, data) {
+				expect(err).to.be.equal('invalid_size');
+				done();
+            });
+        });
+
+		it('should succeed with size', function(done) {
+			this.timeout(20000);
+
+            elasticsearch.search({
+				index: INDEX,
+				type: TYPE,
+				body: {
+					query: {
+				    	match_all: {}
+					}
+				},
+				size: 1
+			}, function(err, data) {
+				expect(err).to.be.null;
+				expect(data.hits.total).to.be.equal(2);
+				expect(data.hits.hits.length).to.be.equal(1);
+				done();
+            });
+        });
+
+		it('should return an error for invalid from', function(done) {
+			this.timeout(20000);
+
+            elasticsearch.search({
+				index: INDEX,
+				type: TYPE,
+				body: {
+					query: {
+				    	match_all: {}
+					}
+				},
+				from: 1.5
+			}, function(err, data) {
+				expect(err).to.be.equal('invalid_from');
+				done();
+            });
+        });
+
+		it('should succeed with from', function(done) {
+			this.timeout(20000);
+
+            elasticsearch.search({
+				index: INDEX,
+				type: TYPE,
+				body: {
+					query: {
+				    	match_all: {}
+					}
+				},
+				from: 2
+			}, function(err, data) {
+				expect(err).to.be.null;
+				expect(data.hits.total).to.be.equal(2);
+				expect(data.hits.hits.length).to.be.equal(0);
+				done();
+            });
+        });
+
+		it('should return an error for invalid searchType', function(done) {
+			this.timeout(20000);
+
+            elasticsearch.search({
+				index: INDEX,
+				type: TYPE,
+				body: {
+					query: {
+				    	match_all: {}
+					}
+				},
+				searchType: 5
+			}, function(err, data) {
+				expect(err).to.be.equal('invalid_searchType');
+				done();
+            });
+        });
+
+		it('should succeed with searchType', function(done) {
+			this.timeout(20000);
+
+            elasticsearch.search({
+				index: INDEX,
+				type: TYPE,
+				body: {
+					query: {
+				    	match_all: {}
+					}
+				},
+				searchType: 'count'
+			}, function(err, data) {
+				expect(err).to.be.null;
+				expect(data.hits.total).to.be.equal(2);
+				expect(data.hits.hits.length).to.be.equal(0);
+				done();
+            });
+        });
+
+		it('should return an error for invalid scroll', function(done) {
+			this.timeout(20000);
+
+            elasticsearch.search({
+				index: INDEX,
+				type: TYPE,
+				body: {
+					query: {
+				    	match_all: {}
+					}
+				},
+				scroll: 1
+			}, function(err, data) {
+				expect(err).to.be.equal('invalid_scroll');
 				done();
             });
         });
@@ -714,13 +856,13 @@ describe('aws-es', function() {
 				scroll: '1ms'
 			}, function(err, data) {
 				expect(err).to.be.null;
-				expect(data.hits.total).to.be.above(0);
+				expect(data.hits.total).to.be.equal(2);
 				expect(data._scroll_id).to.be.a('string');
 				done();
             });
         });
 
-		it('should succeed with scroll-scan', function(done) {
+		it('should return an error for invalid sort', function(done) {
 			this.timeout(20000);
 
             elasticsearch.search({
@@ -731,12 +873,28 @@ describe('aws-es', function() {
 				    	match_all: {}
 					}
 				},
-				scroll: '1ms',
-				search_type: 'scan'
+				sort: 1
+			}, function(err, data) {
+				expect(err).to.be.equal('invalid_sort');
+				done();
+            });
+        });
+
+		it('should succeed with sort', function(done) {
+			this.timeout(20000);
+
+            elasticsearch.search({
+				index: INDEX,
+				type: TYPE,
+				body: {
+					query: {
+				    	match_all: {}
+					}
+				},
+				sort: 'shares:desc'
 			}, function(err, data) {
 				expect(err).to.be.null;
-				expect(data.hits.total).to.be.above(0);
-				expect(data._scroll_id).to.be.a('string');
+				expect(data.hits.hits[0]._source.shares).to.be.above(data.hits.hits[1]._source.shares);
 				done();
             });
         });
@@ -811,7 +969,7 @@ describe('aws-es', function() {
 				scroll: '1ms'
 			}, function(err, data) {
 				expect(err).to.be.null;
-				expect(data.hits.total).to.be.above(0);
+				expect(data.hits.total).to.be.equal(2);
 				expect(data._scroll_id).to.be.a('string');
 				elasticsearch.scroll({
 					scroll: '1ms',
@@ -981,7 +1139,7 @@ describe('aws-es', function() {
             elasticsearch.mget({
 				index: INDEX,
 				type: TYPE,
-				body: ['1']
+				body: ['1', '2']
 			}, function(err, data) {
                 expect(err).to.be.equal('invalid_body');
             });
@@ -994,11 +1152,11 @@ describe('aws-es', function() {
 				index: INDEX,
 				type: TYPE,
 				body: {
-					ids: ['1']
+					ids: ['1', '2']
 				}
 			}, function(err, data) {
 				expect(err).to.be.null;
-				expect(data.docs[0]._id).to.be.equal('1');
+				expect(data.docs.length).to.be.equal(2);
 				done();
             });
         });
