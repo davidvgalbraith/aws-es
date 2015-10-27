@@ -3,7 +3,9 @@
 
 AWS-ES is a Node.js binding for Amazon's [Elasticsearch service](https://aws.amazon.com/elasticsearch-service/) which requires Amazon's [Signature Version 4](http://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
 
-The binding is almost identical to the '[elasticsearch](https://www.npmjs.com/package/elasticsearch)' package to guarantee minimal changes in the code when moving from your Elasticsearch server to Amazon's Elasticsearch service. Currently, it supports the basic functionality needed to get an app with basic Elasticsearch requirements up and running in no-time.
+The binding is almost identical to the '[elasticsearch](https://www.npmjs.com/package/elasticsearch)' package to guarantee minimal changes in the code when moving from your Elasticsearch server to Amazon's Elasticsearch service. Currently, it supports the basic functionalities but they can probably get your app up and running in no-time.
+
+This package was initially created to be used by [Notify.ly](https://notify.ly/) and [Crowd Analyzer](http://crowdanalyzer.com/). But you can use it as you like, under the Apache 2.0 license.
 
 **How to use:**
 ---------
