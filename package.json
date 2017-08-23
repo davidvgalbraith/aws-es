@@ -1,6 +1,6 @@
 {
   "name": "aws-es",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "A Node.js binding for Amazon's Elasticsearch service which requires Amazon's Signature Version 4.",
   "main": "./lib/aws-es.js",
   "scripts": {

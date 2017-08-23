@@ -36,6 +36,7 @@ Initialization:
 				index: 'blog',
 				type: 'posts',
 				id: '1',
+				routing: 'blog',
 				body: {
 					title: 'manually set id',
 					shares: 10
@@ -89,6 +90,7 @@ Initialization:
 				index: 'blog',
 				type: 'posts',
 				id: '1',
+				routing: 'blog',
 				body: {
 					doc: {
 						title: 'new title'
