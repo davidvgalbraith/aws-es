@@ -1,6 +1,6 @@
 {
-  "name": "aws-es",
-  "version": "1.5.2",
+  "name": "aws-es-forked",
+  "version": "1.5.3",
   "description": "A Node.js binding for Amazon's Elasticsearch service which requires Amazon's Signature Version 4.",
   "main": "./lib/aws-es.js",
   "scripts": {
@@ -15,6 +15,12 @@
     "elasticsearch"
   ],
   "author": "Mahmoud Adly <mahmoud.adly@crowdanalyzer.com>",
+  "contributors": [
+    {
+      "name": "Szymon Nowicki",
+      "email": "szymon.nowicki@shopgate.com"
+    }
+  ],
   "license": "Apache-2.0",
   "dependencies": {
     "aws4": "^1.1.0",
