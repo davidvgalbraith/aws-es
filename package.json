@@ -15,12 +15,6 @@
     "elasticsearch"
   ],
   "author": "Mahmoud Adly <mahmoud.adly@crowdanalyzer.com>",
-  "contributors": [
-    {
-      "name": "Szymon Nowicki",
-      "email": "szymon.nowicki@shopgate.com"
-    }
-  ],
   "license": "Apache-2.0",
   "dependencies": {
     "aws4": "^1.1.0",
